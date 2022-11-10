@@ -7,7 +7,7 @@
  LibreOffice Writer set in $librePath
  SysInternals RamMap set in $rmapPath
  SysInternals Process Explorer set in $procexpPath
- SysInternals VmMap setin $vmapPath
+ SysInternals VmMap set in $vmapPath
  ShareX set in $screenshotAppPath
  -----------------------------------
  Scripts checks if utilities are running before launching them
@@ -52,14 +52,7 @@ $wd = Get-Location
 $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 # Name of game process
 $gameName = (Get-ChildItem $gamePath).BaseName
-
-
-
 $libreProcess = (Get-ChildItem $librePath).BaseName
-
-
-
-
 $gameDisk = $gamePath[0]
 $gameLaunchWaitTime = 10
 
@@ -91,11 +84,7 @@ function ProfileGame {
     PageFilesSize
 }
 
-
 Write-Host "Script Started at $timestamp"
-
-
-If ($debug) { Write-Host "" }
 
 # Launch OBS
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
@@ -203,4 +192,3 @@ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
 DrivesFreeSpace
 PageFilesSize
-
