@@ -4,13 +4,16 @@
  This script requires the following software:
 
  OBSStudio with OBS working directory set in $obsWd
- LibreOffice Writer set in $librePath
+ LibreOffice Writer/MSWord set in $librePath
  SysInternals RamMap set in $rmapPath
  SysInternals Process Explorer set in $procexpPath
  SysInternals VmMap set in $vmapPath
  ShareX set in $screenshotAppPath
  -----------------------------------
- Scripts checks if utilities are running before launching them
+ A tool for quick launching your game testing session.
+ Starts up OBS Studio, Writer, Notepad, RamMap, VmMap, Process Explorer.
+ Prints out info about memory, pagefile use, remaining drive free space. 
+ Scripts checks if utilities are running before launching them, preventing multiple instances
 
  You can switch between using ShareX/Lightshot and notepad/notepad++ 
  by commenting lines in and out
