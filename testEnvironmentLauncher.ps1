@@ -70,7 +70,7 @@ $vmapLaunch = $true,
 # Launch ProcExp
 $procexpLaunch = $true,
 # Script debug mode
-$debug = $true
+$debug = $false
 )
 
 function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
@@ -87,7 +87,9 @@ function PageFilesSize {
     Write-Host "Pagefiles:"
     Write-Host ( $pages | Format-Table | Out-String)
 }
-function PIDs {
+function CreatePidTable {
+    Clear-Variable PIDtable
+    $PIDtable = New-Object System.Data.DataTable
     [void]$PIDtable.Columns.Add("$gameName")
     [void]$PIDtable.Columns.Add("OBS")
     [void]$PIDtable.Columns.Add("Writer")
@@ -97,6 +99,10 @@ function PIDs {
     [void]$PIDtable.Columns.Add("VmMap")
     #[void]$PIDtable.Rows.Add("$gameName", "OBS","Writer","Notepad","Screenshot app", "RamMap", "VmMap")
     [void]$PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
+
+}
+
+function PIDs {
     Write-Host "Process IDs:"
     $PIDtable 
 }
@@ -114,11 +120,6 @@ function ProfileGame {
     Write-Host "Game memory usage: $gameMemory" 
     DrivesFreeSpace
     PageFilesSize
-}
-
-
-if($debug){
-    Write-Host ""
 }
 
 if($debug){
@@ -151,6 +152,7 @@ if($obsActive -eq $null){
  $obs = Get-Process obs64
  }
 $obsId = ($obs.Id)
+CreatePidTable
 If ($debug) { Write-Host "OBS PID: $obsId"}
 
 # Launch LibreOffice Writer
@@ -162,6 +164,7 @@ else{
  $writer = Get-Process $libreProcess
  }
 $writerId = ($writer.Id)
+CreatePidTable
 If ($debug) { Write-Host "Writer PID: $writerId" }
 
 #Launch RamMap
@@ -173,6 +176,7 @@ else{
  $rmap = Get-Process RAMMap64
  }
 $rmapId = ($rmap.Id)
+CreatePidTable
 If ($debug) { Write-Host "RamMap PID: $rmapId" }
 
 # Launch Process Explorer
@@ -184,6 +188,7 @@ else{
  $procexp = Get-Process procexp64
  }
 $procexpId = ($procexp.Id)
+CreatePidTable
 If ($debug) { Write-Host "Procexp PID: $procexpId" }
 
 # Launch notepad for notes
@@ -202,6 +207,7 @@ else{
  $notepad = Get-Process $notepadProcess
  }
 $notepadId = ($notepad.Id)
+CreatePidTable
 If ($debug) { Write-Host "Notepad PID: $notepadId"}
 
 # Launch Screenshot app
@@ -214,6 +220,7 @@ else{
  $screenshot = Get-Process $screenshotAppProcessName
  }
 $screenshotId = ($screenshot.Id)
+CreatePidTable
 If ($debug) { Write-Host "Screenshot app PID: $screenshotId"}
 
 # Return to script working directory
@@ -222,6 +229,7 @@ Set-Location -Path $wd
 # Print resources at start
 DrivesFreeSpace
 PageFilesSize
+CreatePidTable
 PIDs
 #Try to launch the game
 if($gameLaunch){Start-Process $gamePath}
@@ -239,6 +247,7 @@ $game = Get-Process $gameName -ErrorAction SilentlyContinue
 }
 Until($started)
 $game = (Get-Process $gameName).Id
+CreatePidTable
 If($debug) { Write-Host "Game PID: $game"}
 
 #Launch VMMap
@@ -246,6 +255,7 @@ $vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
 if($vmapActive) { $vmapActive | Stop-Process -Force }
 $vmap = Start-Process "$vmapPath" -PassThru -ArgumentList "-p $game"
 $vmapId = ($vmap.Id)
+CreatePidTable
 If ($debug) { Write-Host "VmmMap PID: $vmapId" }
 
 # Profiling Loop
@@ -263,4 +273,5 @@ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
 DrivesFreeSpace
 PageFilesSize
+CreatePidTable
 PIDs
