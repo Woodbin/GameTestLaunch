@@ -32,7 +32,8 @@ $gamePath = "path to game",
 $notes = "path to notes",
 # URL of bugtracking service
 $bugtracking = "http:\\url.to.bugtracking",
-$openBugtracking = $true,
+# URL of timetracking service
+$timetracking = "http://timetracking.app",
 # OBS working directory
 $obsWd = "path to obs directory",
 # Paths to utility executables
@@ -50,6 +51,10 @@ $screenshotAppProcessName = "ShareX",
 #$screenshotAppProcessName = "lightshot",
 # Launch the game during script start
 $gamelaunch = $false,
+# Open bugtracking
+$launchBugtracking = $true,
+# Open timetracking
+$launchTimetracking = $true,
 # Launch OBS
 $obsLaunch = $true,
 # Launch Writer
@@ -58,8 +63,6 @@ $writerLaunch = $true,
 $notepadLaunch = $true,
 # Launch ScreenshotApp
 $screenshotLaunch = $true,
-# Launch Bugtracking
-$launchBugtracking = $true,
 # Launch RamMap
 $rmapLaunch = $true,
 # Launch VmMap 
@@ -137,7 +140,8 @@ Write-Host "Script Started at $timestamp"
 
 # Open bugtracking
 if($launchBugtracking){ Start-Process $bugtracking}
-
+# Open timetracking
+if($launchTimetracking) { Start-Process $timetracking }
 # Launch OBS
 
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
