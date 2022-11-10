@@ -69,11 +69,25 @@ function PageFilesSize {
     Write-Host "Pagefiles:"
     Write-Host ( $pages | Format-Table | Out-String)
 }
+function PIDs {
+    [void]$PIDtable.Columns.Add("$gameName")
+    [void]$PIDtable.Columns.Add("OBS")
+    [void]$PIDtable.Columns.Add("Writer")
+    [void]$PIDtable.Columns.Add("Notepad")
+    [void]$PIDtable.Columns.Add("Screenshot app")
+    [void]$PIDtable.Columns.Add("RamMap")
+    [void]$PIDtable.Columns.Add("VmMap")
+    #[void]$PIDtable.Rows.Add("$gameName", "OBS","Writer","Notepad","Screenshot app", "RamMap", "VmMap")
+    [void]$PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
+    Write-Host "Process IDs:"
+    $PIDtable  
+}
 function ProfileGame {
     $memory = Get-CIMInstance Win32_OperatingSystem | Select FreePhysicalMemory,TotalVisibleMemory
     $gameMemory = Get-Process $gameName | Select-Object Name,@{Name='WorkingSet';Expression={($_.WorkingSet/1KB)}}
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
+    PIDs
     Write-Host "Memory Info:"
     Write-Host ($memory| Format-Table | Out-String)
     Write-Host "Game memory usage: $gameMemory" 
@@ -100,7 +114,7 @@ $gameName = (Get-ChildItem $gamePath).BaseName
 $libreProcess = (Get-ChildItem $librePath).BaseName
 $gameDisk = $gamePath[0]
 $gameLaunchWaitTime = 10
-
+$PIDtable = New-Object System.Data.DataTable
 Write-Host "Script Started at $timestamp"
 
 # Open bugtracking
@@ -171,7 +185,7 @@ Set-Location -Path $wd
 # Print resources at start
 DrivesFreeSpace
 PageFilesSize
-
+PIDs
 #Try to launch the game
 if($gameLaunch){Start-Process $gamePath}
 
@@ -212,4 +226,4 @@ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
 DrivesFreeSpace
 PageFilesSize
-
+PIDs
