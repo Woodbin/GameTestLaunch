@@ -26,8 +26,6 @@
 param (
 # Refresh time of profiler
 [int]$profilerRefreshRate = 10,
-# Launch the game during script start
-$gamelaunch = $false,
 # Path to game executable
 $gamePath = "path to game",
 # Path to file with notes
@@ -50,12 +48,29 @@ $screenshotAppPath = "path to shareX-launcher",
 $screenshotAppProcessName = "ShareX",
 #$screenshotAppPath = "path to lightshot",
 #$screenshotAppProcessName = "lightshot",
-
+# Launch the game during script start
+$gamelaunch = $false,
+# Launch OBS
+$obsLaunch = $true,
+# Launch Writer
+$writerLaunch = $true,
+# Launch Notepad
+$notepadLaunch = $true,
+# Launch ScreenshotApp
+$screenshotLaunch = $true,
+# Launch Bugtracking
+$launchBugtracking = $true,
+# Launch RamMap
+$rmapLaunch = $true,
+# Launch VmMap 
+$vmapLaunch = $true,
+# Launch ProcExp
+$procexpLaunch = $true,
 # Script debug mode
 $debug = $true
 )
 
-function RefreshTimestamp() { $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
+function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
     $cdrive = (Get-PSDrive C)
@@ -80,8 +95,11 @@ function PIDs {
     #[void]$PIDtable.Rows.Add("$gameName", "OBS","Writer","Notepad","Screenshot app", "RamMap", "VmMap")
     [void]$PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
     Write-Host "Process IDs:"
-    $PIDtable  
+    $PIDtable 
 }
+
+
+
 function ProfileGame {
     $memory = Get-CIMInstance Win32_OperatingSystem | Select FreePhysicalMemory,TotalVisibleMemory
     $gameMemory = Get-Process $gameName | Select-Object Name,@{Name='WorkingSet';Expression={($_.WorkingSet/1KB)}}
@@ -118,12 +136,13 @@ $PIDtable = New-Object System.Data.DataTable
 Write-Host "Script Started at $timestamp"
 
 # Open bugtracking
-if($openBugtracking){ Start-Process $bugtracking}
+if($launchBugtracking){ Start-Process $bugtracking}
 
 # Launch OBS
+
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
 if($obsActive -eq $null){
- $obs = Start-Process "$obsWd\obs64.exe" -PassThru -WorkingDirectory $obsWd
+ if($obsLaunch){$obs = Start-Process "$obsWd\obs64.exe" -PassThru -WorkingDirectory $obsWd}
  }else{
  $obs = Get-Process obs64
  }
@@ -132,7 +151,9 @@ If ($debug) { Write-Host "OBS PID: $obsId"}
 
 # Launch LibreOffice Writer
 $writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
-if($writerActive -eq $null){ $writer = Start-Process $librePath -PassThru}
+if($writerActive -eq $null){
+ if($writerLaunch){$writer = Start-Process $librePath -PassThru}
+ }
 else{
  $writer = Get-Process $libreProcess
  }
@@ -141,7 +162,9 @@ If ($debug) { Write-Host "Writer PID: $writerId" }
 
 #Launch RamMap
 $rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
-if($rmapActive -eq $null) { $rmap = Start-Process $rmapPath -PassThru}
+if($rmapActive -eq $null) {
+ if($rmapLaunch){$rmap = Start-Process $rmapPath -PassThru}
+ }
 else{
  $rmap = Get-Process RAMMap64
  }
@@ -150,7 +173,9 @@ If ($debug) { Write-Host "RamMap PID: $rmapId" }
 
 # Launch Process Explorer
 $procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
-if($procexpActive -eq $null){ $procexp = Start-Process $procexpPath -PassThru}
+if($procexpActive -eq $null){ 
+if($procexpLaunch){$procexp = Start-Process $procexpPath -PassThru}
+}
 else{
  $procexp = Get-Process procexp64
  }
@@ -161,8 +186,13 @@ If ($debug) { Write-Host "Procexp PID: $procexpId" }
 $notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
 If($notepadActive -eq $null){
 If(Test-Path -Path $notes -PathType Leaf){
+    if($notepadLaunch){
     $notepad = Start-Process $notepadPath -PassThru -ArgumentList "$notes"
-}else{$notepad = Start-Process $notepadPath -PassThru}
+    }
+}else{
+    if($notepadLaunch){
+    $notepad = Start-Process $notepadPath -PassThru}
+    }
 }
 else{
  $notepad = Get-Process $notepadProcess
@@ -172,7 +202,10 @@ If ($debug) { Write-Host "Notepad PID: $notepadId"}
 
 # Launch Screenshot app
 $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
-if($screenshotActive -eq $null) { $screenshot = Start-Process $screenshotAppPath -PassThru}
+if($screenshotActive -eq $null) {
+    if($screenshotLaunch){
+ $screenshot = Start-Process $screenshotAppPath -PassThru}
+ }
 else{
  $screenshot = Get-Process $screenshotAppProcessName
  }
