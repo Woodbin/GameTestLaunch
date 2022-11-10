@@ -12,6 +12,7 @@
  -----------------------------------
  A tool for quick launching your game testing session.
  Starts up OBS Studio, Writer, Notepad, RamMap, VmMap, Process Explorer.
+ Also opens bugtracking page specified in $bugtracking
  Prints out info about memory, pagefile use, remaining drive free space. 
  Scripts checks if utilities are running before launching them, preventing multiple instances
 
@@ -31,6 +32,9 @@ $gamelaunch = $false,
 $gamePath = "path to game",
 # Path to file with notes
 $notes = "path to notes",
+# URL of bugtracking service
+$bugtracking = "http:\\url.to.bugtracking",
+$openBugtracking = $true,
 # OBS working directory
 $obsWd = "path to obs directory",
 # Paths to utility executables
@@ -98,6 +102,9 @@ $gameDisk = $gamePath[0]
 $gameLaunchWaitTime = 10
 
 Write-Host "Script Started at $timestamp"
+
+# Open bugtracking
+if($openBugtracking){ Start-Process $bugtracking}
 
 # Launch OBS
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
