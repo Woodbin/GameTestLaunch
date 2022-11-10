@@ -51,16 +51,6 @@ $screenshotAppProcessName = "ShareX",
 $debug = $true
 )
 
-$wd = Get-Location
-$timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-# Name of game process
-$gameName = (Get-ChildItem $gamePath).BaseName
-$libreProcess = (Get-ChildItem $librePath).BaseName
-$gameDisk = $gamePath[0]
-$gameLaunchWaitTime = 10
-
-#$debug = $true
-
 function RefreshTimestamp() { $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
@@ -86,6 +76,26 @@ function ProfileGame {
     DrivesFreeSpace
     PageFilesSize
 }
+
+
+if($debug){
+    Write-Host ""
+}
+
+if($debug){
+    Write-Host "Script starting. Work directory:"
+}
+$wd = Get-Location
+
+if($debug){
+    Write-Host $wd
+}
+$timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+# Name of game process
+$gameName = (Get-ChildItem $gamePath).BaseName
+$libreProcess = (Get-ChildItem $librePath).BaseName
+$gameDisk = $gamePath[0]
+$gameLaunchWaitTime = 10
 
 Write-Host "Script Started at $timestamp"
 
@@ -195,3 +205,4 @@ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
 DrivesFreeSpace
 PageFilesSize
+
