@@ -32,7 +32,7 @@ $gamePath = "path to game",
 # Path to file with notes
 $notes = "path to notes",
 # URL of bugtracking service
-$bugtracking = "http:\\url.to.bugtracking",
+$bugtracking = "http://url.to.bugtracking",
 # URL of timetracking service
 $timetracking = "http://timetracking.app",
 # OBS working directory
@@ -74,11 +74,11 @@ $procexpLaunch = $true,
 $debug = $false
 )
 
-function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
+function RefreshTimestamp{ $global:timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
-    $cdrive = (Get-PSDrive C)
-    $kdrive = (Get-PSDrive ($gameDisk))
+    $global:cdrive = (Get-PSDrive C)
+    $global:kdrive = (Get-PSDrive ($gameDisk))
     $cfree = ($cdrive.Free)/1GB
     $kfree = ($kdrive.Free)/1GB
     Write-Host "Drive Free Space:`n=============================`n C:       $cfree GB`n K:       $kfree GB`n"
@@ -88,9 +88,87 @@ function PageFilesSize {
     Write-Host "Pagefiles:"
     Write-Host ( $pages | Format-Table | Out-String)
 }
+function refreshPids {
+#TODO
+$obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
+if($obsActive -eq $null){
+ if($obsLaunch){
+ #process null when should be running
+ }
+ }else{
+ $obs = Get-Process obs64
+ }
+$global:obsId = ($obs.Id)
+
+$writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
+if($writerActive -eq $null){
+ if($writerLaunch){
+ #process null when should be running
+ }
+ }
+else{
+ $writer = Get-Process $libreProcess
+ }
+$global:writerId = ($writer.Id)
+
+$rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
+if($rmapActive -eq $null) {
+#process null when should be running
+ }
+else{
+ $rmap = Get-Process RAMMap64
+ }
+$global:rmapId = ($rmap.Id)
+
+$procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
+if($procexpActive -eq $null){ 
+if($procexpLaunch){
+#process null when should be running
+}
+}
+else{
+ $procexp = Get-Process procexp64
+ }
+$global:procexpId = ($procexp.Id)
+
+$notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
+If($notepadActive -eq $null){
+    if($notepadLaunch){
+    #process null when should be running
+    }
+}else{
+ $notepad = Get-Process $notepadProcess
+ }
+ $global:notepadId = ($notepad).Id
+
+ $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
+if($screenshotActive -eq $null) {
+    if($screenshotLaunch){
+    #process null when should be running
+    }
+ }
+else{
+ $screenshot = Get-Process $screenshotAppProcessName
+ }
+$global:screenshotId = ($screenshot.Id)
+
+$vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
+if($vmapActive -eq $null) { 
+    if($vmapLaunch){
+    #process null when should be running
+    }
+    }else{
+    $vmap = Get-Process vmmap64
+}
+
+$global:vmapId = ($vmap.Id)
+
+}
 function CreatePidTable {
-    Clear-Variable PIDtable
-    $PIDtable = New-Object System.Data.DataTable
+    #Clear-Variable PIDtable
+    #$PIDtable = New-Object System.Data.DataTable
+#    refreshPids
+    [void]$PIDtable.Clear()
     [void]$PIDtable.Columns.Add("$gameName")
     [void]$PIDtable.Columns.Add("OBS")
     [void]$PIDtable.Columns.Add("Writer")
@@ -105,7 +183,7 @@ function CreatePidTable {
 
 function PIDs {
     Write-Host "Process IDs:"
-    $PIDtable 
+    Write-Host ($PIDtable | Format-Table | Out-String)
 }
 
 
