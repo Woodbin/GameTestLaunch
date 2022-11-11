@@ -163,28 +163,38 @@ if($vmapActive -eq $null) {
 
 $global:vmapId = ($vmap.Id)
 
+if($debug){
+Write-Host "refreshPids called"
+Write-Host "$gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId"
+}
+
 }
 function CreatePidTable {
     #Clear-Variable PIDtable
-    #$PIDtable = New-Object System.Data.DataTable
-#    refreshPids
-    [void]$PIDtable.Clear()
-    [void]$PIDtable.Columns.Add("$gameName")
-    [void]$PIDtable.Columns.Add("OBS")
-    [void]$PIDtable.Columns.Add("Writer")
-    [void]$PIDtable.Columns.Add("Notepad")
-    [void]$PIDtable.Columns.Add("Screenshot app")
-    [void]$PIDtable.Columns.Add("RamMap")
-    [void]$PIDtable.Columns.Add("VmMap")
+    $global:PIDtable = New-Object System.Data.DataTable
+       refreshPids
+    #[void]$PIDtable.Clear()
+    [void]$global:PIDtable.Columns.Add("$gameName")
+    [void]$global:PIDtable.Columns.Add("OBS")
+    [void]$global:PIDtable.Columns.Add("Writer")
+    [void]$global:PIDtable.Columns.Add("Notepad")
+    [void]$global:PIDtable.Columns.Add("Screenshot app")
+    [void]$global:PIDtable.Columns.Add("RamMap")
+    [void]$global:PIDtable.Columns.Add("VmMap")
     #[void]$PIDtable.Rows.Add("$gameName", "OBS","Writer","Notepad","Screenshot app", "RamMap", "VmMap")
-    [void]$PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
-
+    [void]$global:PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
+    if($debug){
+    Write-Host "CreatePidTable called"
+    Write-Host ($global:PIDtable | Format-Table | Out-String)
+    }
 }
 
 function PIDs {
+    CreatePidTable
     Write-Host "Process IDs:"
-    Write-Host ($PIDtable | Format-Table | Out-String)
+    Write-Host ($global:PIDtable | Format-Table | Out-String)
 }
+
 
 
 
