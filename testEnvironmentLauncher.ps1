@@ -13,6 +13,7 @@
  A tool for quick launching your game testing session.
  Starts up OBS Studio, Writer, Notepad, RamMap, VmMap, Process Explorer.
  Also opens bugtracking page specified in $bugtracking
+ Also opens timetracking pace specified in $timetracking
  Prints out info about memory, pagefile use, remaining drive free space. 
  Scripts checks if utilities are running before launching them, preventing multiple instances
 
