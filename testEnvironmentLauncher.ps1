@@ -325,12 +325,13 @@ if($gameLaunch){Start-Process $gamePath}
 
 # Wait for game to start
 $started = $false
+Write-Host 'Waiting for game to start'
 Do {
 $game = Get-Process $gameName -ErrorAction SilentlyContinue
-   If (!($game)) { Write-Host 'Waiting for game to start' ; Start-Sleep -Seconds $gameLaunchWaitTime }
+   If (!($game)) { Start-Sleep -Seconds $gameLaunchWaitTime }
    Else{ 
    $gameId = (Get-Process $gameName).Id
-   Write-Host "Game running, pid: $gameId"
+   Write-Host "$gameName running, pid: $gameId"
    $started = $true 
    }
 }
