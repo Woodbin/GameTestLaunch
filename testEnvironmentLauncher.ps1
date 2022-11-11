@@ -89,9 +89,8 @@ function PageFilesSize {
     Write-Host ( $pages | Format-Table | Out-String)
 }
 function refreshPids {
-#TODO
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
-if($obsActive -eq $null){
+if($null -eq $obsActive){
  if($obsLaunch){
  #process null when should be running
  }
@@ -101,7 +100,7 @@ if($obsActive -eq $null){
 $global:obsId = ($obs.Id)
 
 $writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
-if($writerActive -eq $null){
+if($null -eq $writerActive){
  if($writerLaunch){
  #process null when should be running
  }
@@ -112,7 +111,7 @@ else{
 $global:writerId = ($writer.Id)
 
 $rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
-if($rmapActive -eq $null) {
+if($null -eq $rmapActive) {
 #process null when should be running
  }
 else{
@@ -121,7 +120,7 @@ else{
 $global:rmapId = ($rmap.Id)
 
 $procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
-if($procexpActive -eq $null){ 
+if($null -eq $procexpActive){ 
 if($procexpLaunch){
 #process null when should be running
 }
@@ -132,7 +131,7 @@ else{
 $global:procexpId = ($procexp.Id)
 
 $notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
-If($notepadActive -eq $null){
+If($null -eq $notepadActive){
     if($notepadLaunch){
     #process null when should be running
     }
@@ -142,7 +141,7 @@ If($notepadActive -eq $null){
  $global:notepadId = ($notepad).Id
 
  $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
-if($screenshotActive -eq $null) {
+if($null -eq $screenshotActive) {
     if($screenshotLaunch){
     #process null when should be running
     }
@@ -153,7 +152,7 @@ else{
 $global:screenshotId = ($screenshot.Id)
 
 $vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
-if($vmapActive -eq $null) { 
+if($null -eq $vmapActive) { 
     if($vmapLaunch){
     #process null when should be running
     }
@@ -199,7 +198,7 @@ function PIDs {
 
 
 function ProfileGame {
-    $memory = Get-CIMInstance Win32_OperatingSystem | Select FreePhysicalMemory,TotalVisibleMemory
+    $memory = Get-CIMInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory,TotalVisibleMemory
     $gameMemory = Get-Process $gameName | Select-Object Name,@{Name='WorkingSet';Expression={($_.WorkingSet/1KB)}}
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
@@ -235,7 +234,7 @@ if($launchTimetracking) { Start-Process $timetracking }
 # Launch OBS
 
 $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
-if($obsActive -eq $null){
+if($null -eq $obsActive){
  if($obsLaunch){$obs = Start-Process "$obsWd\obs64.exe" -PassThru -WorkingDirectory $obsWd}
  }else{
  $obs = Get-Process obs64
@@ -246,7 +245,7 @@ If ($debug) { Write-Host "OBS PID: $obsId"}
 
 # Launch LibreOffice Writer
 $writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
-if($writerActive -eq $null){
+if($null -eq $writerActive){
  if($writerLaunch){$writer = Start-Process $librePath -PassThru}
  }
 else{
@@ -258,7 +257,7 @@ If ($debug) { Write-Host "Writer PID: $writerId" }
 
 #Launch RamMap
 $rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
-if($rmapActive -eq $null) {
+if($null -eq $rmapActive) {
  if($rmapLaunch){$rmap = Start-Process $rmapPath -PassThru}
  }
 else{
@@ -270,7 +269,7 @@ If ($debug) { Write-Host "RamMap PID: $rmapId" }
 
 # Launch Process Explorer
 $procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
-if($procexpActive -eq $null){ 
+if($null -eq $procexpActive){ 
 if($procexpLaunch){$procexp = Start-Process $procexpPath -PassThru}
 }
 else{
@@ -282,7 +281,7 @@ If ($debug) { Write-Host "Procexp PID: $procexpId" }
 
 # Launch notepad for notes
 $notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
-If($notepadActive -eq $null){
+If($null -eq $notepadActive){
 If(Test-Path -Path $notes -PathType Leaf){
     if($notepadLaunch){
     $notepad = Start-Process $notepadPath -PassThru -ArgumentList "$notes"
@@ -301,7 +300,7 @@ If ($debug) { Write-Host "Notepad PID: $notepadId"}
 
 # Launch Screenshot app
 $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
-if($screenshotActive -eq $null) {
+if($null -eq $screenshotActive) {
     if($screenshotLaunch){
  $screenshot = Start-Process $screenshotAppPath -PassThru}
  }
