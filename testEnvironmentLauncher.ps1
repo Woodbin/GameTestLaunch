@@ -74,14 +74,44 @@ $procexpLaunch = $true,
 $debug = $false
 )
 
+$startingValues = @{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+}
+
+$values = @{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    gameMemory = "";
+}
+
+$lastValues = @{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    gameMemory = "";
+}
+
+
 function RefreshTimestamp{ $global:timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
     $global:cdrive = (Get-PSDrive C)
-    $global:kdrive = (Get-PSDrive ($gameDisk))
-    $cfree = ($cdrive.Free)/1GB
-    $kfree = ($kdrive.Free)/1GB
-    Write-Host "Drive Free Space:`n=============================`n C:       $cfree GB`n K:       $kfree GB`n"
+    $global:gamedrive = (Get-PSDrive ($gameDisk))
+    $sysfree = ($cdrive.Free)/1GB
+    $gamefree = ($gamedrive.Free)/1GB
+    Write-Host "Drive Free Space:`n=============================`n C:       $sysfree GB`n K:       $gamefree GB`n"
 }
 function PageFilesSize {
     $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
@@ -89,82 +119,82 @@ function PageFilesSize {
     Write-Host ( $pages | Format-Table | Out-String)
 }
 function refreshPids {
-$obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
-if($null -eq $obsActive){
- if($obsLaunch){
- #process null when should be running
- }
- }else{
- $obs = Get-Process obs64
- }
-$global:obsId = ($obs.Id)
-
-$writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
-if($null -eq $writerActive){
- if($writerLaunch){
- #process null when should be running
- }
- }
-else{
- $writer = Get-Process $libreProcess
- }
-$global:writerId = ($writer.Id)
-
-$rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
-if($null -eq $rmapActive) {
-#process null when should be running
- }
-else{
- $rmap = Get-Process RAMMap64
- }
-$global:rmapId = ($rmap.Id)
-
-$procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
-if($null -eq $procexpActive){ 
-if($procexpLaunch){
-#process null when should be running
-}
-}
-else{
- $procexp = Get-Process procexp64
- }
-$global:procexpId = ($procexp.Id)
-
-$notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
-If($null -eq $notepadActive){
-    if($notepadLaunch){
-    #process null when should be running
-    }
-}else{
- $notepad = Get-Process $notepadProcess
- }
- $global:notepadId = ($notepad).Id
-
- $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
-if($null -eq $screenshotActive) {
-    if($screenshotLaunch){
-    #process null when should be running
-    }
- }
-else{
- $screenshot = Get-Process $screenshotAppProcessName
- }
-$global:screenshotId = ($screenshot.Id)
-
-$vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
-if($null -eq $vmapActive) { 
-    if($vmapLaunch){
+    $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
+    if($null -eq $obsActive){
+    if($obsLaunch){
     #process null when should be running
     }
     }else{
-    $vmap = Get-Process vmmap64
-}
+    $obs = Get-Process obs64
+    }
+    $global:obsId = ($obs.Id)
 
-$global:vmapId = ($vmap.Id)
+    $writerActive = Get-Process $libreProcess -ErrorAction SilentlyContinue
+    if($null -eq $writerActive){
+    if($writerLaunch){
+    #process null when should be running
+    }
+    }
+    else{
+    $writer = Get-Process $libreProcess
+    }
+    $global:writerId = ($writer.Id)
 
-if($debug){
-Write-Host "refreshPids called"
-Write-Host "$gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId"
+    $rmapActive = Get-Process RAMMap64 -ErrorAction SilentlyContinue
+    if($null -eq $rmapActive) {
+    #process null when should be running
+    }
+    else{
+    $rmap = Get-Process RAMMap64
+    }
+    $global:rmapId = ($rmap.Id)
+
+    $procexpActive = Get-Process procexp64 -ErrorAction SilentlyContinue
+    if($null -eq $procexpActive){ 
+    if($procexpLaunch){
+    #process null when should be running
+    }
+    }
+    else{
+    $procexp = Get-Process procexp64
+    }
+    $global:procexpId = ($procexp.Id)
+
+    $notepadActive = Get-Process $notepadProcess -ErrorAction SilentlyContinue
+    If($null -eq $notepadActive){
+        if($notepadLaunch){
+        #process null when should be running
+        }
+    }else{
+    $notepad = Get-Process $notepadProcess
+    }
+    $global:notepadId = ($notepad).Id
+
+    $screenshotActive = Get-Process $screenshotAppProcessName -ErrorAction SilentlyContinue
+    if($null -eq $screenshotActive) {
+        if($screenshotLaunch){
+        #process null when should be running
+        }
+    }
+    else{
+    $screenshot = Get-Process $screenshotAppProcessName
+    }
+    $global:screenshotId = ($screenshot.Id)
+
+    $vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
+    if($null -eq $vmapActive) { 
+        if($vmapLaunch){
+        #process null when should be running
+        }
+        }else{
+        $vmap = Get-Process vmmap64
+    }
+
+    $global:vmapId = ($vmap.Id)
+
+    if($debug){
+    Write-Host "refreshPids called"
+    Write-Host "$gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId"
 }
 
 }
@@ -194,20 +224,79 @@ function PIDs {
     Write-Host ($global:PIDtable | Format-Table | Out-String)
 }
 
+function getStartValues(){
+    $sysfree = ($cdrive.Free)/1GB
+    $sysmax = (($cdrive.Free)+($cdrive.Used))/1GB
+    $gamefree = ($gamedrive.Free)/1GB
+    $gamemax = (($gamedrive.Free)+($gamedrive.Used))/1GB
+    $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
+    @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
+    $startingValues["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    $startingValues["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
+    $startingValues["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
+    $startingValues["sysPageFile"] =  "Initial: $($global:pages.get(0).InitialSize) MB / Current: $(($global:pages.Get(0).FileSize)/1MB) MB / Total: $($global:pages.Get(0).MaximumSize) MB"
+    $startingValues["gamePageFile"] = "Initial: $($global:pages.get(1).InitialSize) MB / Current: $(($global:pages.Get(1).FileSize)/1MB) MB / Total: $($global:pages.Get(1).MaximumSize) MB"
+    $startingValues["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
 
+    if($debug){
+        Write-Host "Starting Values:"
+        Write-Host ($startingValues | Format-Table | Out-String)
+    }
+}
+
+function getValues(){
+    $sysfree = ($cdrive.Free)/1GB
+    $sysmax = (($cdrive.Free)+($cdrive.Used))/1GB
+    $gamefree = ($gamedrive.Free)/1GB
+    $gamemax = (($gamedrive.Free)+($gamedrive.Used))/1GB
+    $sysMem = $os | Select @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
+    @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
+    $game = Get-Process $gameName -ErrorAction SilentlyContinue
+    #TODO fix memory calculation
+    if(!($game)){
+    $gameWs = 0
+    $gamePm = 0    
+    }Else{
+    $gameWs = (((Get-Process $gameName).WorkingSet)/1MB)
+    $gamePm = (((Get-Process $gameName).PrivateMemorySize)/1MB)
+    }
+    $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
+    $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    $values["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
+    $values["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
+    $values["sysPageFile"] =  "Initial: $($global:pages.get(0).InitialSize) MB / Current: $(($global:pages.Get(0).FileSize)/1MB) MB / Max: $($global:pages.Get(0).MaximumSize) MB"
+    $values["gamePageFile"] = "Initial: $($global:pages.get(1).InitialSize) MB / Current: $(($global:pages.Get(1).FileSize)/1MB) MB / Max: $($global:pages.Get(1).MaximumSize) MB"
+    $values["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
+
+    $values["gameMemory"] = $gamemem
+    if($debug){
+        Write-Host "Values:"
+        Write-Host ($values | Format-Table | Out-String)
+    }
+}
+function backupValues(){
+    $lastValues["time"] = $values["time"]
+    $lastValues["sysdrive"] = $values["sysdrive"]
+    $lastValues["gameDrive"] = $values["gameDrive"]
+    $lastValues["sysPageFile"] = $values["sysPageFile"]
+    $lastValues["gamePageFile"] = $values["gamePageFile"]
+    $lastValues["sysMemory"] = $values["sysMemory"]
+    $lastValues["gameMemory"] = $values["gameMemory"]
+}
 
 
 function ProfileGame {
-    $memory = Get-CIMInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory,TotalVisibleMemory
-    $gameMemory = Get-Process $gameName | Select-Object Name,@{Name='WorkingSet';Expression={($_.WorkingSet/1KB)}}
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
     PIDs
-    Write-Host "Memory Info:"
-    Write-Host ($memory| Format-Table | Out-String)
-    Write-Host "Game memory usage: $gameMemory" 
-    DrivesFreeSpace
-    PageFilesSize
+    backupValues
+    getValues
+    Write-Host ($values | Format-Table | Out-String)
+    #Write-Host "Memory Info:"
+    #Write-Host ($memory| Format-Table | Out-String)
+    #Write-Host "Game memory usage: $gameMemory" 
+    #DrivesFreeSpace
+    #PageFilesSize
 }
 
 if($debug){
@@ -218,6 +307,8 @@ $wd = Get-Location
 if($debug){
     Write-Host $wd
 }
+
+
 $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 # Name of game process
 $gameName = (Get-ChildItem $gamePath).BaseName
@@ -226,6 +317,10 @@ $gameDisk = $gamePath[0]
 $gameLaunchWaitTime = 10
 $PIDtable = New-Object System.Data.DataTable
 Write-Host "Script Started at $timestamp"
+$cdrive = (Get-PSDrive C)
+$gamedrive = (Get-PSDrive ($gameDisk))
+$os = Get-Ciminstance Win32_OperatingSystem
+$pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
 
 # Open bugtracking
 if($launchBugtracking){ Start-Process $bugtracking}
@@ -315,8 +410,11 @@ If ($debug) { Write-Host "Screenshot app PID: $screenshotId"}
 Set-Location -Path $wd
 
 # Print resources at start
-DrivesFreeSpace
-PageFilesSize
+#DrivesFreeSpace
+#PageFilesSize
+getStartValues
+Write-Host "Starting values:"
+Write-Host ($startingValues | Format-Table | Out-String)
 CreatePidTable
 PIDs
 #Try to launch the game
@@ -342,7 +440,7 @@ If($debug) { Write-Host "Game PID: $game"}
 #Launch VMMap
 $vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
 if($vmapActive) { $vmapActive | Stop-Process -Force }
-$vmap = Start-Process "$vmapPath" -PassThru -ArgumentList "-p $game"
+if($vmapLaunch){$vmap = Start-Process "$vmapPath" -PassThru -ArgumentList "-p $game"}
 $vmapId = ($vmap.Id)
 CreatePidTable
 If ($debug) { Write-Host "VmmMap PID: $vmapId" }
@@ -350,7 +448,7 @@ If ($debug) { Write-Host "VmmMap PID: $vmapId" }
 # Profiling Loop
 $gameRunning = (Get-Process $gameName -ErrorAction SilentlyContinue)
 Do {
-    #Clear-Host
+    Clear-Host
     ProfileGame
     Start-Sleep -Seconds $profilerRefreshRate
     $gameRunning = (Get-Process $gameName -ErrorAction SilentlyContinue)
@@ -360,7 +458,14 @@ While($gameRunning)
 #Resources after game stops running
 $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
-DrivesFreeSpace
-PageFilesSize
+#DrivesFreeSpace
+#PageFilesSize
+Write-Host "Starting values:"
+Write-Host ($startingValues | Format-Table | Out-String)
+Write-Host "Last Recorded while running: "
+Write-Host ($lastValues | Format-Table | Out-String)
+getValues
+Write-Host "Values at finish:"
+Write-Host ($values | Format-Table | Out-String)
 CreatePidTable
 PIDs
