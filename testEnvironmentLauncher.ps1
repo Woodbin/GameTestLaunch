@@ -105,19 +105,7 @@ $lastValues = [ordered]@{
     gameMemory = "";
     cpuUse = "";
 }
-function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
-function DrivesFreeSpace {
-    $global:cdrive = (Get-PSDrive C)
-    $global:gamedrive = (Get-PSDrive ($gameDisk))
-    $sysfree = ($cdrive.Free)/1GB
-    $gamefree = ($gamedrive.Free)/1GB
-    Write-Host "Drive Free Space:`n=============================`n C:       $sysfree GB`n K:       $gamefree GB`n"
-}
-function PageFilesSize {
-    $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
-    Write-Host "Pagefiles:"
-    Write-Host ( $pages | Format-Table | Out-String)
-}
+
 function refreshPids {
     $obsActive = Get-Process obs64 -ErrorAction SilentlyContinue
     if($null -eq $obsActive){
@@ -199,10 +187,8 @@ function refreshPids {
 
 }
 function CreatePidTable {
-    #Clear-Variable PIDtable
     $global:PIDtable = New-Object System.Data.DataTable
-       refreshPids
-    #[void]$PIDtable.Clear()
+    refreshPids
     [void]$global:PIDtable.Columns.Add("$gameName")
     [void]$global:PIDtable.Columns.Add("OBS")
     [void]$global:PIDtable.Columns.Add("Writer")
@@ -210,7 +196,6 @@ function CreatePidTable {
     [void]$global:PIDtable.Columns.Add("Screenshot app")
     [void]$global:PIDtable.Columns.Add("RamMap")
     [void]$global:PIDtable.Columns.Add("VmMap")
-    #[void]$PIDtable.Rows.Add("$gameName", "OBS","Writer","Notepad","Screenshot app", "RamMap", "VmMap")
     [void]$global:PIDtable.Rows.Add($gameId,$obsId,$writerId,$notepadId,$screenshotId,$rmapId,$vmapId)
     if($debug){
     Write-Host "CreatePidTable called"
@@ -262,13 +247,14 @@ function getValues(){
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
     $game = Get-Process $gameName -ErrorAction SilentlyContinue
-    $gameCpuLoad = (Get-WmiObject -class Win32_PerfFormattedData_PerfProc_Process | Where-Object {$_.Name -eq "$gameName"}).PercentProcessorTime
     if(!($game)){
     $gameWs = 0
     $gamePm = 0    
+    $gameCpuLoad = 0
     }Else{
     $gameWs = (((Get-Process $gameName).WorkingSet64)/1MB)
     $gamePm = (((Get-Process $gameName).PrivateMemorySize64)/1MB)
+    $gameCpuLoad = (Get-WmiObject -class Win32_PerfFormattedData_PerfProc_Process | Where-Object {$_.Name -eq "$gameName"}).PercentProcessorTime
     }
     $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
     $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
@@ -286,10 +272,17 @@ function getValues(){
 }
 
 function exportReport(){
+    $cpuName = (Get-WmiObject Win32_Processor).Name
+    $gpuName = (Get-WmiObject win32_VideoController).Name
+    $ramInfo = (Get-CimInstance win32_physicalmemory | Format-Table Manufacturer,PartNumber,Configuredclockspeed,Capacity,Serialnumber -autosize | Out-String)
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH-mm-ss"
     $filename = "$gameName $timeStamp.txt"
     New-Item -ItemType File -Path $wd -Name $filename
     Add-Content -Path "$wd\$filename" -Value "$gameName profiling report" 
+    Add-Content -Path "$wd\$filename" -Value "CPU: $cpuName"
+    Add-Content -Path "$wd\$filename" -Value "GPU: $gpuName"
+    Add-Content -Path "$wd\$filename" -Value "RAM Info:"
+    Add-Content -Path "$wd\$filename" -Value "$ramInfo"
     Add-Content -Path "$wd\$filename" -Value "Starting values:"
     Add-Content -Path "$wd\$filename" -Value ($startingValues | Format-Table | Out-String)
     Add-Content -Path "$wd\$filename" -Value "Last recorded:"
@@ -309,10 +302,6 @@ function backupValues(){
     $lastValues["cpuUse"] = $values["cpuUse"]
 }
 
-function refreshDrives(){
-    $cdrive = (Get-PSDrive C)
-    $gamedrive = (Get-PSDrive ($gameDisk))
-}
 function ProfileGame {
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
@@ -320,11 +309,6 @@ function ProfileGame {
     backupValues
     getValues
     Write-Host ($values | Format-Table | Out-String)
-    #Write-Host "Memory Info:"
-    #Write-Host ($memory| Format-Table | Out-String)
-    #Write-Host "Game memory usage: $gameMemory" 
-    #DrivesFreeSpace
-    #PageFilesSize
 }
 
 if($debug){
@@ -352,8 +336,10 @@ $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, Maximum
 $cores = (Get-CimInstance Win32_Processor).NumberOfCores
 $logical = (Get-CimInstance Win32_Processor).NumberOfLogicalProcessors
 $clock = (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty MaxClockSpeed)
+
 # Open bugtracking
 if($launchBugtracking){ Start-Process $bugtracking}
+
 # Open timetracking
 if($launchTimetracking) { Start-Process $timetracking }
 # Launch OBS
@@ -433,9 +419,7 @@ If ($debug) { Write-Host "Screenshot app PID: $screenshotId"}
 # Return to script working directory
 Set-Location -Path $wd
 
-# Print resources at start
-#DrivesFreeSpace
-#PageFilesSize
+# Get starting resources
 getStartValues
 Write-Host "Starting values:"
 Write-Host ($startingValues | Format-Table | Out-String)
@@ -480,8 +464,6 @@ While($gameRunning)
 #Resources after game stops running
 $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
-#DrivesFreeSpace
-#PageFilesSize
 Write-Host "Starting values:"
 Write-Host ($startingValues | Format-Table | Out-String)
 Write-Host "Last Recorded while running: "
