@@ -107,6 +107,39 @@ $lastValues = [ordered]@{
 }
 
 
+$startingValues = [ordered]@{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    cpuUse = "";
+}
+
+$values = [ordered]@{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    gameMemory = "";
+    cpuUse = "";
+}
+
+$lastValues = [ordered]@{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    gameMemory = "";
+    cpuUse = "";
+}
+
+
 function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
@@ -239,10 +272,10 @@ function getStartValues(){
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
     $startingValues["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-    $startingValues["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
-    $startingValues["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
-    $startingValues["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
-    $startingValues["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
+    $startingValues["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
+    $startingValues["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
+    $startingValues["sysPageFile"] =  "Min: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
+    $startingValues["gamePageFile"] = "Min: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
     $startingValues["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
     $startingValues["cpuUse"] = "CPU Load: $cpuLoad % | Cores: $cores Logical Processors: $logical Max Clock: $clock MHz"
     if($debug){
@@ -273,10 +306,10 @@ function getValues(){
     }
     $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
     $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-    $values["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
-    $values["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
-    $values["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
-    $values["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
+    $values["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
+    $values["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
+    $values["sysPageFile"] =  "Min: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
+    $values["gamePageFile"] = "Min: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
     $values["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
     $values["cpuUse"] = "CPU Load: $cpuLoad % $gameName Usage: $gameCpuLoad % | Cores: $cores Logical Processors: $logical Max Clock: $clock MHz"
     $values["gameMemory"] = $gamemem
@@ -366,7 +399,6 @@ if($null -eq $obsActive){
  $obs = Get-Process obs64
  }
 $obsId = ($obs.Id)
-CreatePidTable
 If ($debug) { Write-Host "OBS PID: $obsId"}
 
 # Launch LibreOffice Writer
@@ -378,7 +410,6 @@ else{
  $writer = Get-Process $libreProcess
  }
 $writerId = ($writer.Id)
-CreatePidTable
 If ($debug) { Write-Host "Writer PID: $writerId" }
 
 #Launch RamMap
@@ -390,7 +421,6 @@ else{
  $rmap = Get-Process RAMMap64
  }
 $rmapId = ($rmap.Id)
-CreatePidTable
 If ($debug) { Write-Host "RamMap PID: $rmapId" }
 
 # Launch Process Explorer
@@ -402,7 +432,6 @@ else{
  $procexp = Get-Process procexp64
  }
 $procexpId = ($procexp.Id)
-CreatePidTable
 If ($debug) { Write-Host "Procexp PID: $procexpId" }
 
 # Launch notepad for notes
@@ -421,7 +450,6 @@ else{
  $notepad = Get-Process $notepadProcess
  }
 $notepadId = ($notepad.Id)
-CreatePidTable
 If ($debug) { Write-Host "Notepad PID: $notepadId"}
 
 # Launch Screenshot app
@@ -434,7 +462,6 @@ else{
  $screenshot = Get-Process $screenshotAppProcessName
  }
 $screenshotId = ($screenshot.Id)
-CreatePidTable
 If ($debug) { Write-Host "Screenshot app PID: $screenshotId"}
 
 # Return to script working directory
@@ -465,7 +492,6 @@ $game = Get-Process $gameName -ErrorAction SilentlyContinue
 }
 Until($started)
 $game = (Get-Process $gameName).Id
-CreatePidTable
 If($debug) { Write-Host "Game PID: $game"}
 
 #Launch VMMap
@@ -473,7 +499,6 @@ $vmapActive = Get-Process vmmap64 -ErrorAction SilentlyContinue
 if($vmapActive) { $vmapActive | Stop-Process -Force }
 if($vmapLaunch){$vmap = Start-Process "$vmapPath" -PassThru -ArgumentList "-p $game"}
 $vmapId = ($vmap.Id)
-CreatePidTable
 If ($debug) { Write-Host "VmmMap PID: $vmapId" }
 
 # Profiling Loop
