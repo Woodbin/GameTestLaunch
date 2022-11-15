@@ -274,6 +274,20 @@ function getValues(){
         Write-Host ($values | Format-Table | Out-String)
     }
 }
+
+function exportReport(){
+    $timeStamp = Get-Date -Format "MM/dd/yyyy HH-mm-ss"
+    $filename = "$gameName $timeStamp.txt"
+    New-Item -ItemType File -Path $wd -Name $filename
+    Add-Content -Path "$wd\$filename" -Value "$gameName profiling report" 
+    Add-Content -Path "$wd\$filename" -Value "Starting values:"
+    Add-Content -Path "$wd\$filename" -Value ($startingValues | Format-Table | Out-String)
+    Add-Content -Path "$wd\$filename" -Value "Last recorded:"
+    Add-Content -Path "$wd\$filename" -Value ($lastValues | Format-Table | Out-String)
+    Add-Content -Path "$wd\$filename" -Value "After exit:"
+    Add-Content -Path "$wd\$filename" -Value ($values | Format-Table | Out-String)
+}
+
 function backupValues(){
     $lastValues["time"] = $values["time"]
     $lastValues["sysdrive"] = $values["sysdrive"]
@@ -469,3 +483,4 @@ Write-Host "Values at finish:"
 Write-Host ($values | Format-Table | Out-String)
 CreatePidTable
 PIDs
+exportReport
