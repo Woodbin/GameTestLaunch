@@ -304,7 +304,7 @@ function backupValues(){
     $lastValues["gamePageFile"] = $values["gamePageFile"]
     $lastValues["sysMemory"] = $values["sysMemory"]
     $lastValues["gameMemory"] = $values["gameMemory"]
-    $lastValues["cpuUse"] = $values["cpuUsed"]
+    $lastValues["cpuUse"] = $values["cpuUse"]
 }
 
 function refreshDrives(){
