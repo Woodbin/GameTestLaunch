@@ -232,6 +232,7 @@ function getStartValues(){
     $sysmax = ((($cdrive.Free)+($cdrive.Used))/1GB).ToString("N")
     $gamefree = (($gamedrive.Free)/1GB).ToString("N")
     $gamemax = ((($gamedrive.Free)+($gamedrive.Used))/1GB).ToString("N")
+    $os = Get-Ciminstance Win32_OperatingSystem
     $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},    
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
@@ -256,6 +257,7 @@ function getValues(){
     $sysmax = ((($cdrive.Free)+($cdrive.Used))/1GB).ToString("N")
     $gamefree = (($gamedrive.Free)/1GB).ToString("N")
     $gamemax = ((($gamedrive.Free)+($gamedrive.Used))/1GB).ToString("N")
+    $os = Get-Ciminstance Win32_OperatingSystem
     $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
