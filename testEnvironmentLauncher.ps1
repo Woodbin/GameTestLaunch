@@ -264,7 +264,6 @@ function getValues(){
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
     $game = Get-Process $gameName -ErrorAction SilentlyContinue
     $gameCpuLoad = (Get-WmiObject -class Win32_PerfFormattedData_PerfProc_Process | Where-Object {$_.Name -eq "$gameName"}).PercentProcessorTime
-    #TODO fix memory calculation
     if(!($game)){
     $gameWs = 0
     $gamePm = 0    
