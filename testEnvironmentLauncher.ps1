@@ -241,8 +241,8 @@ function getStartValues(){
     $startingValues["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     $startingValues["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
     $startingValues["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
-    $startingValues["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Total: $($pages.Get(0).MaximumSize) MB"
-    $startingValues["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Total: $($pages.Get(1).MaximumSize) MB"
+    $startingValues["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
+    $startingValues["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
     $startingValues["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
     $startingValues["cpuUse"] = "CPU Load: $cpuLoad % | Cores: $cores Logical Processors: $logical Max Clock: $clock MHz"
     if($debug){
@@ -274,8 +274,8 @@ function getValues(){
     }
     $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
     $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-    $values["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
-    $values["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
+    $values["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
+    $values["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
     $values["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
     $values["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
     $values["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
