@@ -105,43 +105,7 @@ $lastValues = [ordered]@{
     gameMemory = "";
     cpuUse = "";
 }
-
-
-$startingValues = [ordered]@{
-    time = "";
-    sysDrive = "";
-    gameDrive = "";
-    sysPageFile = "";
-    gamePageFile = "";
-    sysMemory = "";
-    cpuUse = "";
-}
-
-$values = [ordered]@{
-    time = "";
-    sysDrive = "";
-    gameDrive = "";
-    sysPageFile = "";
-    gamePageFile = "";
-    sysMemory = "";
-    gameMemory = "";
-    cpuUse = "";
-}
-
-$lastValues = [ordered]@{
-    time = "";
-    sysDrive = "";
-    gameDrive = "";
-    sysPageFile = "";
-    gamePageFile = "";
-    sysMemory = "";
-    gameMemory = "";
-    cpuUse = "";
-}
-
-
 function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
-
 function DrivesFreeSpace {
     $global:cdrive = (Get-PSDrive C)
     $global:gamedrive = (Get-PSDrive ($gameDisk))
