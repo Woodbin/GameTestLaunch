@@ -74,26 +74,17 @@ $procexpLaunch = $true,
 $debug = $false
 )
 
-$startingValues = @{
+$startingValues = [ordered]@{
     time = "";
     sysDrive = "";
     gameDrive = "";
     sysPageFile = "";
     gamePageFile = "";
     sysMemory = "";
+    cpuUse = "";
 }
 
-$values = @{
-    time = "";
-    sysDrive = "";
-    gameDrive = "";
-    sysPageFile = "";
-    gamePageFile = "";
-    sysMemory = "";
-    gameMemory = "";
-}
-
-$lastValues = @{
+$values = [ordered]@{
     time = "";
     sysDrive = "";
     gameDrive = "";
@@ -101,10 +92,22 @@ $lastValues = @{
     gamePageFile = "";
     sysMemory = "";
     gameMemory = "";
+    cpuUse = "";
+}
+
+$lastValues = [ordered]@{
+    time = "";
+    sysDrive = "";
+    gameDrive = "";
+    sysPageFile = "";
+    gamePageFile = "";
+    sysMemory = "";
+    gameMemory = "";
+    cpuUse = "";
 }
 
 
-function RefreshTimestamp{ $global:timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
+function RefreshTimestamp{ $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss" }
 
 function DrivesFreeSpace {
     $global:cdrive = (Get-PSDrive C)
@@ -225,19 +228,23 @@ function PIDs {
 }
 
 function getStartValues(){
-    $sysfree = ($cdrive.Free)/1GB
-    $sysmax = (($cdrive.Free)+($cdrive.Used))/1GB
-    $gamefree = ($gamedrive.Free)/1GB
-    $gamemax = (($gamedrive.Free)+($gamedrive.Used))/1GB
-    $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
+    $cdrive = (Get-PSDrive C)
+    $gamedrive = (Get-PSDrive ($gameDisk))
+    $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
+    $sysfree = (($cdrive.Free)/1GB).ToString("N")
+    $sysmax = ((($cdrive.Free)+($cdrive.Used))/1GB).ToString("N")
+    $gamefree = (($gamedrive.Free)/1GB).ToString("N")
+    $gamemax = ((($gamedrive.Free)+($gamedrive.Used))/1GB).ToString("N")
+    $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},    
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
+    $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
     $startingValues["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     $startingValues["sysDrive"] = "Free: $sysfree GB / Max:$sysmax GB"
     $startingValues["gameDrive"] = "Free: $gamefree GB / Max: $gamemax GB"
-    $startingValues["sysPageFile"] =  "Initial: $($global:pages.get(0).InitialSize) MB / Current: $(($global:pages.Get(0).FileSize)/1MB) MB / Total: $($global:pages.Get(0).MaximumSize) MB"
-    $startingValues["gamePageFile"] = "Initial: $($global:pages.get(1).InitialSize) MB / Current: $(($global:pages.Get(1).FileSize)/1MB) MB / Total: $($global:pages.Get(1).MaximumSize) MB"
+    $startingValues["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Total: $($pages.Get(0).MaximumSize) MB"
+    $startingValues["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Total: $($pages.Get(1).MaximumSize) MB"
     $startingValues["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
-
+    $startingValues["cpuUse"] = "CPU Load: $cpuLoad % | Cores: $cores Logical Processors: $logical Max Clock: $clock MHz"
     if($debug){
         Write-Host "Starting Values:"
         Write-Host ($startingValues | Format-Table | Out-String)
@@ -245,29 +252,34 @@ function getStartValues(){
 }
 
 function getValues(){
-    $sysfree = ($cdrive.Free)/1GB
-    $sysmax = (($cdrive.Free)+($cdrive.Used))/1GB
-    $gamefree = ($gamedrive.Free)/1GB
-    $gamemax = (($gamedrive.Free)+($gamedrive.Used))/1GB
-    $sysMem = $os | Select @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
+    $cdrive = (Get-PSDrive C)
+    $gamedrive = (Get-PSDrive ($gameDisk))
+    $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
+    $sysfree = (($cdrive.Free)/1GB).ToString("N")
+    $sysmax = ((($cdrive.Free)+($cdrive.Used))/1GB).ToString("N")
+    $gamefree = (($gamedrive.Free)/1GB).ToString("N")
+    $gamemax = ((($gamedrive.Free)+($gamedrive.Used))/1GB).ToString("N")
+    $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
+    $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
     $game = Get-Process $gameName -ErrorAction SilentlyContinue
+    $gameCpuLoad = (Get-WmiObject -class Win32_PerfFormattedData_PerfProc_Process | Where-Object {$_.Name -eq "$gameName"}).PercentProcessorTime
     #TODO fix memory calculation
     if(!($game)){
     $gameWs = 0
     $gamePm = 0    
     }Else{
-    $gameWs = (((Get-Process $gameName).WorkingSet)/1MB)
-    $gamePm = (((Get-Process $gameName).PrivateMemorySize)/1MB)
+    $gameWs = (((Get-Process $gameName).WorkingSet64)/1MB)
+    $gamePm = (((Get-Process $gameName).PrivateMemorySize64)/1MB)
     }
     $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
     $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     $values["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
     $values["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
-    $values["sysPageFile"] =  "Initial: $($global:pages.get(0).InitialSize) MB / Current: $(($global:pages.Get(0).FileSize)/1MB) MB / Max: $($global:pages.Get(0).MaximumSize) MB"
-    $values["gamePageFile"] = "Initial: $($global:pages.get(1).InitialSize) MB / Current: $(($global:pages.Get(1).FileSize)/1MB) MB / Max: $($global:pages.Get(1).MaximumSize) MB"
+    $values["sysPageFile"] =  "Initial: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
+    $values["gamePageFile"] = "Initial: $($pages.get(1).InitialSize) MB / Current: $(($pages.Get(1).FileSize)/1MB) MB / Max: $($pages.Get(1).MaximumSize) MB"
     $values["sysMemory"] = "Free: $($sysMem.FreeGB) GB / Total: $($sysMem.TotalGB) GB"
-
+    $values["cpuUse"] = "CPU Load: $cpuLoad % $gameName Usage: $gameCpuLoad % | Cores: $cores Logical Processors: $logical Max Clock: $clock MHz"
     $values["gameMemory"] = $gamemem
     if($debug){
         Write-Host "Values:"
@@ -296,9 +308,13 @@ function backupValues(){
     $lastValues["gamePageFile"] = $values["gamePageFile"]
     $lastValues["sysMemory"] = $values["sysMemory"]
     $lastValues["gameMemory"] = $values["gameMemory"]
+    $lastValues["cpuUse"] = $values["cpuUsed"]
 }
 
-
+function refreshDrives(){
+    $cdrive = (Get-PSDrive C)
+    $gamedrive = (Get-PSDrive ($gameDisk))
+}
 function ProfileGame {
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
@@ -335,7 +351,9 @@ $cdrive = (Get-PSDrive C)
 $gamedrive = (Get-PSDrive ($gameDisk))
 $os = Get-Ciminstance Win32_OperatingSystem
 $pages=Get-CimInstance Win32_PageFile | Select-Object Name, InitialSize, MaximumSize, Filesize
-
+$cores = (Get-CimInstance Win32_Processor).NumberOfCores
+$logical = (Get-CimInstance Win32_Processor).NumberOfLogicalProcessors
+$clock = (Get-CimInstance Win32_Processor | Select-Object -ExpandProperty MaxClockSpeed)
 # Open bugtracking
 if($launchBugtracking){ Start-Process $bugtracking}
 # Open timetracking
