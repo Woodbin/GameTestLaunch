@@ -274,13 +274,14 @@ function getValues(){
 function exportReport(){
     $cpuName = (Get-WmiObject Win32_Processor).Name
     $gpuName = (Get-WmiObject win32_VideoController).Name
+    $gpuMemory = ((Get-CimInstance -ClassName CIM_VideoController).AdapterRam)/1MB
     $ramInfo = (Get-CimInstance win32_physicalmemory | Format-Table Manufacturer,PartNumber,Configuredclockspeed,Capacity,Serialnumber -autosize | Out-String)
     $timeStamp = Get-Date -Format "MM/dd/yyyy HH-mm-ss"
     $filename = "$gameName $timeStamp.txt"
     New-Item -ItemType File -Path $wd -Name $filename
     Add-Content -Path "$wd\$filename" -Value "$gameName profiling report" 
     Add-Content -Path "$wd\$filename" -Value "CPU: $cpuName"
-    Add-Content -Path "$wd\$filename" -Value "GPU: $gpuName"
+    Add-Content -Path "$wd\$filename" -Value "GPU: $gpuName | Memory: $gpuMemory MB"
     Add-Content -Path "$wd\$filename" -Value "RAM Info:"
     Add-Content -Path "$wd\$filename" -Value "$ramInfo"
     Add-Content -Path "$wd\$filename" -Value "Starting values:"
