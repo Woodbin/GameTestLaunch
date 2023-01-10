@@ -204,7 +204,6 @@ function CreatePidTable {
 }
 
 function PIDs {
-    CreatePidTable
     Write-Host "Process IDs:"
     Write-Host ($global:PIDtable | Format-Table | Out-String)
 }
@@ -303,12 +302,13 @@ function backupValues(){
     $lastValues["cpuUse"] = $values["cpuUse"]
 }
 
-function ProfileGame {
-    $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
-    Write-Host "Resources at $timeStamp"
-    PIDs
+function ProfileGame { 
     backupValues
     getValues
+    if(-not $debug) {Clear-Host}
+    PIDs
+    $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    Write-Host "Resources at $timeStamp"
     Write-Host ($values | Format-Table | Out-String)
 }
 
@@ -454,10 +454,23 @@ If ($debug) { Write-Host "VmmMap PID: $vmapId" }
 
 # Profiling Loop
 $gameRunning = (Get-Process $gameName -ErrorAction SilentlyContinue)
+
 Do {
-    Clear-Host
     ProfileGame
-    Start-Sleep -Seconds $profilerRefreshRate
+    $now = $values["time"]
+    $last = $lastValues["time"]
+    if(-Not $last){$last=$startingValues["time"]}
+    if($debug){Write-Host "Now is $now and last is $last"}
+    $timeDifference=New-Timespan -Start $last -End $now
+    if($timeDifference.Seconds -lt $profilerRefreshRate){
+        $sleepTime = $profilerRefreshRate - $timeDifference.Seconds
+        if($debug){Write-Host "Time difference: $timeDifference  |  Sleeptime: $sleepTime"}
+    }else{
+        $sleepTime = 0
+        if($debug){Write-Host "Time difference: $timeDifference  |  Sleeptime: $sleepTime"}
+
+    }
+    Start-Sleep -Seconds $sleepTime
     $gameRunning = (Get-Process $gameName -ErrorAction SilentlyContinue)
 }
 While($gameRunning)
