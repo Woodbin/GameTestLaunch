@@ -220,7 +220,7 @@ function getStartValues(){
     $sysMem = $os | Select-Object @{Name = "FreeGB";Expression = {[math]::Round($_.FreePhysicalMemory/1mb,2)}},    
     @{Name = "TotalGB";Expression = {[int]($_.TotalVisibleMemorySize/1mb)}}
     $cpuLoad = (Get-CimInstance -ClassName win32_processor | Measure-Object -Property LoadPercentage -Average).Average
-    $startingValues["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    $startingValues["time"] = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
     $startingValues["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
     $startingValues["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
     $startingValues["sysPageFile"] =  "Min: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
@@ -256,7 +256,7 @@ function getValues(){
     $gameCpuLoad = (Get-WmiObject -class Win32_PerfFormattedData_PerfProc_Process | Where-Object {$_.Name -eq "$gameName"}).PercentProcessorTime
     }
     $gamemem = "Working Set: $gameWs MB | Private Memory: $gamePm MB"
-    $values["time"] = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    $values["time"] = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
     $values["sysDrive"] = "Free: $sysfree GB / Total:$sysmax GB"
     $values["gameDrive"] = "Free: $gamefree GB / Total: $gamemax GB"
     $values["sysPageFile"] =  "Min: $($pages.get(0).InitialSize) MB / Current: $(($pages.Get(0).FileSize)/1MB) MB / Max: $($pages.Get(0).MaximumSize) MB"
@@ -307,7 +307,7 @@ function ProfileGame {
     getValues
     if(-not $debug) {Clear-Host}
     PIDs
-    $timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+    $timeStamp = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
     Write-Host "Resources at $timeStamp"
     Write-Host ($values | Format-Table | Out-String)
 }
@@ -322,7 +322,7 @@ if($debug){
 }
 
 
-$timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+$timeStamp = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
 # Name of game process
 $gameName = (Get-ChildItem $gamePath).BaseName
 $libreProcess = (Get-ChildItem $librePath).BaseName
@@ -476,7 +476,7 @@ Do {
 While($gameRunning)
 
 #Resources after game stops running
-$timeStamp = Get-Date -Format "MM/dd/yyyy HH:mm:ss"
+$timeStamp = Get-Date -Format "dd/MM/yyyy HH:mm:ss"
 Write-Host "[$timestamp] Game stopped running!"
 Write-Host "Starting values:"
 Write-Host ($startingValues | Format-Table | Out-String)
