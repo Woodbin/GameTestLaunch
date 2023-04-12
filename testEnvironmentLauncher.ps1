@@ -46,6 +46,8 @@ $notepadPath = "path to notepad++",
 $notepadProcess = "notepad++",
 #$notepadPath = notepad,
 #$notepadProcess = notepad,
+$sleepyPath = "path to VerySleepy",
+$procdumpPath = "path to ProcDump",
 $screenshotAppPath = "path to shareX-launcher",
 $screenshotAppProcessName = "ShareX",
 #$screenshotAppPath = "path to lightshot",
@@ -300,6 +302,14 @@ function backupValues(){
     $lastValues["sysMemory"] = $values["sysMemory"]
     $lastValues["gameMemory"] = $values["gameMemory"]
     $lastValues["cpuUse"] = $values["cpuUse"]
+}
+
+function startSleepy(){
+    Start-Process -FilePath $sleepyPath+"\sleepy.exe"
+}
+
+function startProcDump(){
+    Start-Process -FilePath $procdumpPath+"\procdump.exe" -ArgumentList "$game"
 }
 
 function ProfileGame { 
